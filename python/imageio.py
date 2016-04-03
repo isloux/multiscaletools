@@ -1,12 +1,21 @@
 #!/usr/bin/env python
+""" 
+	Copyright 2016 Christophe Ramananjaona <isloux AT yahoo.co.uk>
+"""
 
 from PIL import Image
-from numpy import array
+import numpy
 
-def imgread(imgfile):
+def imgread(imgfile,mode="8-bit"):
 	img=Image.open(imgfile)
-	return(array(img))
+	if mode=="8-bit":
+		return numpy.array(img,numpy.uint8)
+	elif mode=="16-bit":
+		return numpy.array(img,numpy.uint16)
 	
-def imgwrite(ima,imgfile):
-	img=Image.fromarray(ima.astype(uint8))
+def imgwrite(ima,imgfile,mode="8-bit"):
+	if mode=="8-bit":
+		img=Image.fromarray(ima,"L")
+	elif mode=="16-bit":
+		img=Image.fromarray(ima,"I;16")
 	img.save(imgfile)
