@@ -1,4 +1,7 @@
 #/usr/bin/env python
+""" 
+        Copyright 2016 Christophe Ramananjaona <isloux AT yahoo.co.uk>
+"""
 
 from numpy import shape,zeros,pi,cos,sin
 from scipy.interpolate import RectBivariateSpline
