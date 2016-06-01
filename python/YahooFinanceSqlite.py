@@ -54,15 +54,6 @@ class sqlitedb:
 			print "Symbol",name,"not found"
 			raise
 
-	def inputYahooNames(self,inputpath):
-		i=0
-		for f in files:
-        		i+=1
-        		name=splitext(basename(f))[0]
-        		self.conn.execute("INSERT INTO RUSSELL3000NAMES (ID,NAME) \
-                		VALUES("+str(i)+",'"+name+"')")
-		self.conn.commit()
-
 	def inputYahooQ(self,inputpath):
 		for f in YahooFinancedata(inputpath).files:
 			lq=[ line.split() for line in file(f) ]
