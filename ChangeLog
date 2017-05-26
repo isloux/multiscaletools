@@ -1,3 +1,9 @@
-2016-04-11 Christophe Ramananjaona <isloux AT yahoo.co.ukL>
+2017-01-18 Christophe Ramananjaona <isloux AT yahoo.co.uk>
+ * Added function to create the slope histogram
+
+2017-01-18 Christophe Ramananjaona <isloux AT yahoo.co.uk>
+ * Added date output and function to get ticker names
+
+2016-04-11 Christophe Ramananjaona <isloux AT yahoo.co.uk>
  * Added ChangeLog
  * Added YashooFinanceSqlite.py

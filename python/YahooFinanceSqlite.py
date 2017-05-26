@@ -54,15 +54,6 @@ class sqlitedb:
 			print "Symbol",name,"not found"
 			raise
 
-	def inputYahooNames(self,inputpath):
-		i=0
-		for f in files:
-        		i+=1
-        		name=splitext(basename(f))[0]
-        		self.conn.execute("INSERT INTO RUSSELL3000NAMES (ID,NAME) \
-                		VALUES("+str(i)+",'"+name+"')")
-		self.conn.commit()
-
 	def inputYahooQ(self,inputpath):
 		for f in YahooFinancedata(inputpath).files:
 			lq=[ line.split() for line in file(f) ]
@@ -88,13 +79,17 @@ class sqlitedb:
 		nameid=self.__getId(name)
 		self.conn.row_factory=lambda cursor, row: row
 		c=self.conn.cursor()
-		ids=c.execute("SELECT OPEN,HIGH,LOW,CLOSE,VOLUME FROM RUSSELL3000Q WHERE NAMEID='"+ \
+		ids=c.execute("SELECT DATE,OPEN,HIGH,LOW,CLOSE,VOLUME FROM RUSSELL3000Q WHERE NAMEID='"+ \
 			str(nameid)+"' AND DATE BETWEEN '"+sdate+"' AND '"+edate+"'").fetchall()
 		return ids
 
 	def getTables(self):
 		cursor=self.conn.execute("SELECT name FROM sqlite_master WHERE type='table';")
 		return cursor.fetchall()
+
+	def getNames(self):
+		cursor=self.conn.execute("SELECT NAME FROM RUSSELL3000NAMES;")
+                return cursor.fetchall()
 
 	def close(self):
 		self.conn.close()

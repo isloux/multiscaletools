@@ -1,9 +1,10 @@
 #/usr/bin/env python
 """ 
-        Copyright 2016 Christophe Ramananjaona <isloux AT yahoo.co.uk>
+        Copyright 2016-2017 Christophe Ramananjaona <isloux AT yahoo.co.uk>
 """
 
 from numpy import shape,zeros,pi,cos,sin
+from numpy import histogram
 from scipy.interpolate import RectBivariateSpline
 from sys import float_info
 
@@ -64,9 +65,12 @@ class TwoDCartesianGrid:
 		""" Does not compute the gradient on the edges """
 		if theta!=0.0 and (theta<=pi*0.5-float_info.epsilon or theta>=pi*0.5+float_info.epsilon):
 			self.__Initdirectionalgrad()
-		gradient=zeros((self.__nx,self.__ny),dtype=self.__dtp)
+		self.gradient=zeros((self.__nx,self.__ny),dtype=self.__dtp)
 		for i in range(1,self.__nx-1):
 			print "Ligne ",i
 			for j in range(1,self.__ny-1):
-				gradient[i][j]=self.__Celldirectionalgrad(i,j,theta)
-		return gradient
+				self.gradient[i][j]=self.__Celldirectionalgrad(i,j,theta)
+
+	def ImageSlopeHistogram(self,nbins):
+		""" Builds the histogram of slopes """
+		self.hist,bin_edges=histogram(self.gradient,bins=nbins)
