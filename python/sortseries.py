@@ -6,6 +6,7 @@
 """
 
 import pandas as pd
+from collections import deque
 
 class CovarianceMatrix:
 
@@ -30,8 +31,6 @@ class CovarianceMatrix:
 		self.__cm.drop([row,col],inplace=True)
 		self.__cm.drop([row,col],axis=1,inplace=True)
 
-class Chainset:
-
 class CorrelatedSeries:
 
 	def __init__(self,filename):
@@ -42,15 +41,16 @@ class CorrelatedSeries:
 		self.available_names=self.__df.columns.tolist()
 		self.chainset1=[]
 
-	def __addtochainbeginning(self,chain_index,element):
-		self.chainset1[chain_index]=[element]+self.chainset1[chain_index]
+	def __addtochainbeginning(self,chain_index,elements):
+		self.chainset1[chain_index].extendleft(elements)
 
-	def __addtochainend(self,chain_index,element):
-		self.chainset1[chain_index].append(element)
+	def __addtochainend(self,chain_index,elements):
+		self.chainset1[chain_index].extend(elements)
 
 	def __getends(self):
 		endlist=[]
 		for i in self.chainset1:
+			print i
 			endlist.append(i[0])
                         endlist.append(i[-1])
 		return endlist
@@ -64,9 +64,9 @@ class CorrelatedSeries:
 		for i in range(len(self.chainset1)):
 			if attachnode in self.chainset1[i]:
 				if attachnode==self.chainset1[i][0]:
-					self.chainset1[i]=[leftnode]+self.chainset1[i]
-				elif attachnode==i[-1]:
-					self.chainset1[i].append(leftnode)
+					self.chainset1[i].extendleft([leftnode])
+				elif attachnode==self.chainset1[i][-1]:
+					self.chainset1[i].extend([leftnode])
 				else:
 					raise "Node error"
 
@@ -76,9 +76,7 @@ class CorrelatedSeries:
 		while len(current_avail_ends)>1:
 			# Find a maximum
 			row,col=self.cm.locatemax()
-			self.chainset1.append([])
-			self.__addtochainbeginning(chain_index,row)
-			self.__addtochainend(chain_index,col)
+			self.chainset1.append(deque([row,col]))
 			self.cm.drop(row,col)
 			current_avail_ends.remove(row)
 			current_avail_ends.remove(col)
