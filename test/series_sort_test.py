@@ -4,4 +4,4 @@ from sortseries import *
 
 cs=CorrelatedSeries("series.csv")
 cs.makepairs()
-#cs.makechain()
+cs.makechain()

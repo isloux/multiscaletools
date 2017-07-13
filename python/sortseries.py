@@ -7,6 +7,9 @@
 
 import pandas as pd
 from collections import deque
+from sys import float_info
+
+MINCOV=-float_info.max
 
 class CovarianceMatrix:
 
@@ -16,11 +19,11 @@ class CovarianceMatrix:
 		# Save a copy of the full matrix with zeroed diagonal
 		self.full=cm.copy()
 		for i in cm.columns.tolist():
-			self.full[i][i]=0.0
+			self.full[i][i]=MINCOV
                 # Zero the upper diagonal of the work matrix
                 for i in range(n):
 			for j in range(i,n):
-                        	self.__cm.iloc[i][j]=0.0
+				self.__cm.iloc[i][j]=MINCOV
 
 	def locatemax(self):
 		row=self.__cm.max().idxmax()
@@ -30,6 +33,12 @@ class CovarianceMatrix:
 	def drop(self,row,col):
 		self.__cm.drop([row,col],inplace=True)
 		self.__cm.drop([row,col],axis=1,inplace=True)
+
+	def dropchainselfcovariance(self,chain):
+		for row in chain:
+			for col in chain:
+				print row,col
+				self.__cm[row][col]=MINCOV
 
 class CorrelatedSeries:
 
@@ -41,11 +50,11 @@ class CorrelatedSeries:
 		self.available_names=self.__df.columns.tolist()
 		self.chainset1=[]
 
-	def __addtochainbeginning(self,chain_index,elements):
-		self.chainset1[chain_index].extendleft(elements)
+	def __addtochainbeginning(self,chain,elements):
+		self.chainset2[chain_index].extendleft(elements)
 
 	def __addtochainend(self,chain_index,elements):
-		self.chainset1[chain_index].extend(elements)
+		self.chainset2[chain_index].extend(elements)
 
 	def __getends(self):
 		endlist=[]
@@ -70,6 +79,20 @@ class CorrelatedSeries:
 				else:
 					raise "Node error"
 
+	def __findchain(self,node):
+		i=0
+		for c in self.chainset1:
+			if c[0]==node:
+				position=0
+				return i,c,position
+			elif c[-1]==node:
+				position=-1
+				return i,c,position
+			else:
+				position=999
+			i+=1
+		return i,c,position
+
 	def makepairs(self):
 		current_avail_ends=self.available_names
 		chain_index=0
@@ -91,17 +114,41 @@ class CorrelatedSeries:
 		# Reinitialise the new covariance matrix for the end series
 		self.cm=CovarianceMatrix(self.__df[self.__getends()].cov())
 		print self.cm.full
+		# Remove the covariance between elements of a chain
+		for c in self.chainset1:
+			self.cm.dropchainselfcovariance(c)
 		self.chainset2=[]
-		current_avail_ends=self.cm.columns.tolist()
-                chain_index=0
+		current_avail_ends=self.cm.full.columns.tolist()
                 while len(current_avail_ends)>1:
                         # Find a maximum
                         row,col=self.cm.locatemax()
-                        self.chainset2.append([])
-                        self.__addtochainbeginning(chain_index,row)
-                        self.__addtochainend(chain_index,col)
+			print row,col
+			chain_index,chain1,position1=self.__findchain(row)
+			self.chainset1.remove(chain1)
+			dummy,chain2,position2=self.__findchain(col)
+			print chain1,chain2
+			print position1,position2
+                        self.chainset2.append(deque([]))
+			if position1==0:
+				if position2==0:
+                        		self.__addtochainbeginning(chain_index,list(chain2))
+				elif position2==-1:
+					niahc2=list(chain2)
+					niahc2.reverse()
+                        		self.__addtochainbeginning(chain_index,niahc2)
+				else:
+					raise "Node error"
+			elif position1==-1:
+                                if position2==0:
+                                        self.__addtochainend(chain_index,list(chain2))
+                                elif position2==-1:
+                                        niahc2=list(chain2)
+                                        niahc2.reverse()
+                                        self.__addtochainbeginning(chain_index,niahc2)
+                                else:
+                                        raise "Node error"
+			else:
+					raise "Node error"
                         self.cm.drop(row,col)
                         current_avail_ends.remove(row)
                         current_avail_ends.remove(col)
-                        chain_index+=1
-
