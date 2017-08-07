@@ -86,7 +86,7 @@ class CorrelatedSeries:
 				position=-1
 				return c,position
 			else:
-				position=999
+				position=-999
 		return c,position
 
 	def makepairs(self):
