@@ -78,18 +78,16 @@ class CorrelatedSeries:
 					raise "Node error"
 
 	def __findchain(self,node):
-		i=0
 		for c in self.chainset1:
 			if c[0]==node:
 				position=0
-				return i,c,position
+				return c,position
 			elif c[-1]==node:
 				position=-1
-				return i,c,position
+				return c,position
 			else:
 				position=999
-			i+=1
-		return i,c,position
+		return c,position
 
 	def makepairs(self):
 		current_avail_ends=self.available_names
@@ -115,14 +113,18 @@ class CorrelatedSeries:
 			self.cm.dropchainselfcovariance(c)
 		self.chainset2=[]
 		current_avail_ends=self.__getends()
+		chain_index=0
                 while len(current_avail_ends)>2:
                         # Find a maximum
                         row,col=self.cm.locatemax()
-			chain_index,chain1,position1=self.__findchain(row)
-			dummy,chain2,position2=self.__findchain(col)
+			print row,col
+			chain1,position1=self.__findchain(row)
+			chain2,position2=self.__findchain(col)
+			print chain_index,chain1,chain2
+			print position1,position2
 			# Attach the two ends of the two chains
+                        self.chainset2.append(chain1)
 			if position1==0:
-                        	self.chainset2.append(chain1)
 				if position2==0:
                         		self.__addtochainbeginning(chain_index,list(chain2))
 				elif position2==-1:
@@ -132,14 +134,12 @@ class CorrelatedSeries:
 				else:
 					raise "Node error"
 			elif position1==-1:
-				chain1.reverse()
-                        	self.chainset2.append(chain1)
                                 if position2==0:
                                         self.__addtochainend(chain_index,list(chain2))
                                 elif position2==-1:
                                         niahc2=list(chain2)
                                         niahc2.reverse()
-                                        self.__addtochainbeginning(chain_index,niahc2)
+                                        self.__addtochainend(chain_index,niahc2)
                                 else:
                                         raise "Node error"
 			else:
@@ -147,3 +147,4 @@ class CorrelatedSeries:
                         self.cm.drop(row,col)
                         current_avail_ends.remove(row)
                         current_avail_ends.remove(col)
+			chain_index+=1

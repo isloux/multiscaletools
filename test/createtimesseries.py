@@ -15,4 +15,4 @@ for i in range(n):
 		a[i][j]+=random.randn()*s*scale
 	names.append("s"+str(i+1))
 df=pd.DataFrame(transpose(a),columns=names)
-df.to_csv("series.csv",index=None)
+df.to_csv("series"+str(n)+".csv",index=None)
