@@ -37,7 +37,6 @@ class CovarianceMatrix:
 	def dropchainselfcovariance(self,chain):
 		for row in chain:
 			for col in chain:
-				print row,col
 				self.__cm[row][col]=MINCOV
 
 class CorrelatedSeries:
@@ -50,7 +49,7 @@ class CorrelatedSeries:
 		self.available_names=self.__df.columns.tolist()
 		self.chainset1=[]
 
-	def __addtochainbeginning(self,chain,elements):
+	def __addtochainbeginning(self,chain_index,elements):
 		self.chainset2[chain_index].extendleft(elements)
 
 	def __addtochainend(self,chain_index,elements):
@@ -59,7 +58,6 @@ class CorrelatedSeries:
 	def __getends(self):
 		endlist=[]
 		for i in self.chainset1:
-			print i
 			endlist.append(i[0])
                         endlist.append(i[-1])
 		return endlist
@@ -108,28 +106,23 @@ class CorrelatedSeries:
 			# Find the maximal correlation with an end
 			leftnode=current_avail_ends[0]
 			self.__attachonetoend(leftnode,self.__getnode(leftnode))
-		print self.chainset1
 
 	def makechain(self):
 		# Reinitialise the new covariance matrix for the end series
-		self.cm=CovarianceMatrix(self.__df[self.__getends()].cov())
-		print self.cm.full
+		self.cm=CovarianceMatrix(self.__df.cov())
 		# Remove the covariance between elements of a chain
 		for c in self.chainset1:
 			self.cm.dropchainselfcovariance(c)
 		self.chainset2=[]
-		current_avail_ends=self.cm.full.columns.tolist()
-                while len(current_avail_ends)>1:
+		current_avail_ends=self.__getends()
+                while len(current_avail_ends)>2:
                         # Find a maximum
                         row,col=self.cm.locatemax()
-			print row,col
 			chain_index,chain1,position1=self.__findchain(row)
-			self.chainset1.remove(chain1)
 			dummy,chain2,position2=self.__findchain(col)
-			print chain1,chain2
-			print position1,position2
-                        self.chainset2.append(deque([]))
+			# Attach the two ends of the two chains
 			if position1==0:
+                        	self.chainset2.append(chain1)
 				if position2==0:
                         		self.__addtochainbeginning(chain_index,list(chain2))
 				elif position2==-1:
@@ -139,6 +132,8 @@ class CorrelatedSeries:
 				else:
 					raise "Node error"
 			elif position1==-1:
+				chain1.reverse()
+                        	self.chainset2.append(chain1)
                                 if position2==0:
                                         self.__addtochainend(chain_index,list(chain2))
                                 elif position2==-1:
