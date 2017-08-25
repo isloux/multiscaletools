@@ -166,7 +166,6 @@ class CorrelatedSeries:
 			# Remove the interior nodes
 			self.cm.trim(current_avail_ends)
 			chain_index=0
-                	#while len(chainset2.clist[-1])<self.__nseries:
                 	while len(self.chainset1.clist)>1:
 				if chain_index==0:
 					# Remove the zero from the list
