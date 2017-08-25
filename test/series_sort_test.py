@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
 from sortseries import *
+from sys import argv
 
-cs=CorrelatedSeries("series10.csv")
+cs=CorrelatedSeries(argv[1])
 cs.makepairs()
-print cs.chainset1.clist
-print cs.makechain()
+print list(cs.makechain()[0])
