@@ -1,1 +1,1 @@
-# imagetools
+# statistical tools
