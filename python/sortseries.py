@@ -118,9 +118,12 @@ class ChainSet:
 
 class CorrelatedSeries:
 
-    def __init__(self,filename):
-        # Read time series
-        self.__df=pd.read_csv(filename)
+    def __init__(self,inputdata):
+        if isinstance(inputdata,pd.DataFrame):
+            self.__df=inputdata
+        else:
+            # Read time series
+            self.__df=pd.read_csv(inputdata)
 	# Compute covariance matrix
         self.cm=CovarianceMatrix(self.__df.cov())
         self.available_names=self.__df.columns.tolist()
