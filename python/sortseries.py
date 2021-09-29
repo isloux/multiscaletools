@@ -54,7 +54,7 @@ class CovarianceMatrix:
 class ChainSet:
 
     def __init__(self,initchain=[]):
-        self.clist=initchain
+        self.clist=deque(initchain)
 
     def addtochainbeginning(self,elements):
         self.clist[-1].extendleft(elements)
@@ -125,14 +125,14 @@ class CorrelatedSeries:
             # Read time series
             self.__df=pd.read_csv(inputdata)
 	# Compute covariance matrix
-        self.cm=CovarianceMatrix(self.__df.cov())
+        self.__cm=CovarianceMatrix(self.__df.cov())
         self.available_names=self.__df.columns.tolist()
         self.chainset1=ChainSet()
 
     def __getnode(self,remainingnode,clist):
         # Return the maximal covariance of the left over series
         # with the series at the end points of the chains
-        return self.cm.full[self.__getends(clist)].loc[remainingnode].idxmax()
+        return self.__cm.full[self.__getends(clist)].loc[remainingnode].idxmax()
 
     def __getends(self,clist):
         endlist=[]
@@ -146,9 +146,9 @@ class CorrelatedSeries:
         chain_index=0
         while len(current_avail_ends)>1:
             # Find a maximum
-            row,col=self.cm.locatemax()
+            row,col=self.__cm.locatemax()
             self.chainset1.clist.append(deque([row,col]))
-            self.cm.drop(row,col)
+            self.__cm.drop(row,col)
             current_avail_ends.remove(row)
             current_avail_ends.remove(col)
             chain_index+=1
@@ -160,27 +160,27 @@ class CorrelatedSeries:
     def makechain(self):
         while len(self.chainset1.clist)>1:
             # Reset the covariance matrix to original
-            self.cm.reinit()
+            self.__cm.reinit()
             # Remove the covariance between elements of a chain
             for c in self.chainset1.clist:
-                self.cm.dropchainselfcovariance(c)
+                self.__cm.dropchainselfcovariance(c)
             chainset2=ChainSet([[0]])
             current_avail_ends=self.__getends(self.chainset1.clist)
             # Remove the interior nodes
-            self.cm.trim(current_avail_ends)
+            self.__cm.trim(current_avail_ends)
             chain_index=0
             while len(self.chainset1.clist)>1:
                 if chain_index==0:
                     # Remove the zero from the list
                     chainset2.clist.pop()
                 # Find a maximum
-                row,col=self.cm.locatemax()
+                row,col=self.__cm.locatemax()
                 chain1,position1=self.chainset1.findchain(row)
                 chain2,position2=self.chainset1.findchain(col)
                 # Attach the two ends of the two chains into chainset2
                 freeends=chainset2.joinchains(chain1,chain2,position1,position2)
-                self.cm.drop(row,col)
-                self.cm.drop(freeends[0],freeends[1])
+                self.__cm.drop(row,col)
+                self.__cm.drop(freeends[0],freeends[1])
                 current_avail_ends.remove(row)
                 current_avail_ends.remove(col)
                 current_avail_ends.remove(freeends[0])
