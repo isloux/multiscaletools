@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-	Copyright 2017 Christophe Ramananjaona <christophe.ramananjaona AT polytechnique.edu>
+	Copyright 2017-2021 Christophe Ramananjaona <christophe.ramananjaona AT polytechnique.edu>
 	Program for sorting times series two by two according to their covariance
 """
 
