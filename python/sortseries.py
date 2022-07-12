@@ -14,42 +14,42 @@ MINCOV=-float_info.max
 
 class CovarianceMatrix:
 
-    def __init__(self,cm=pd.DataFrame()):
-        self.__cm=cm
-        self.n=len(self.__cm.columns)
+    def __init__(self,covariancematrix=pd.DataFrame()):
+        self.__covariancematrix=covariancematrix
+        self.n=len(self.__covariancematrix.columns)
 	# Save a copy of the full matrix with zeroed diagonal
-        self.full=cm.copy()
-        for i in cm.columns.tolist():
+        self.full=covariancematrix.copy()
+        for i in covariancematrix.columns.tolist():
             self.full[i][i]=MINCOV
         # Zero the upper diagonal of the work matrix
         for i in range(self.n):
             for j in range(i,self.n):
-                self.__cm.iloc[i][j]=MINCOV
+                self.__covariancematrix.iloc[i][j]=MINCOV
 
     def locatemax(self):
-        row=self.__cm.max().idxmax()
-        col=self.__cm.idxmax()[row]
+        row=self.__covariancematrix.max().idxmax()
+        col=self.__covariancematrix.idxmax()[row]
         return row,col
 
     def drop(self,row,col):
-        self.__cm.drop([row,col],inplace=True)
-        self.__cm.drop([row,col],axis=1,inplace=True)
+        self.__covariancematrix.drop([row,col],inplace=True)
+        self.__covariancematrix.drop([row,col],axis=1,inplace=True)
 
     def dropchainselfcovariance(self,chain):
         for row in [chain[0],chain[-1]]:
             for col in [chain[0],chain[-1]]:
-                self.__cm[row][col]=MINCOV
+                self.__covariancematrix[row][col]=MINCOV
 
     def reinit(self):
-        self.__cm=self.full
+        self.__covariancematrix=self.full
         # Zero the upper diagonal of the work matrix
         for i in range(self.n):
             for j in range(i,self.n):
-                self.__cm.iloc[i][j]=MINCOV
+                self.__covariancematrix.iloc[i][j]=MINCOV
 
     def trim(self,nodelist):
-        self.__cm=self.__cm[nodelist].copy()
-        self.__cm=self.__cm.loc[nodelist].copy()
+        self.__covariancematrix=self.__covariancematrix[nodelist].copy()
+        self.__covariancematrix=self.__covariancematrix.loc[nodelist].copy()
 
 class ChainSet:
 
@@ -125,14 +125,14 @@ class CorrelatedSeries:
             # Read time series
             self.__df=pd.read_csv(inputdata)
 	# Compute covariance matrix
-        self.__cm=CovarianceMatrix(self.__df.cov())
+        self.__covariancematrix=CovarianceMatrix(self.__df.cov())
         self.available_names=self.__df.columns.tolist()
         self.chainset1=ChainSet()
 
     def __getnode(self,remainingnode,clist):
         # Return the maximal covariance of the left over series
         # with the series at the end points of the chains
-        return self.__cm.full[self.__getends(clist)].loc[remainingnode].idxmax()
+        return self.__covariancematrix.full[self.__getends(clist)].loc[remainingnode].idxmax()
 
     def __getends(self,clist):
         endlist=[]
@@ -146,9 +146,9 @@ class CorrelatedSeries:
         chain_index=0
         while len(current_avail_ends)>1:
             # Find a maximum
-            row,col=self.__cm.locatemax()
+            row,col=self.__covariancematrix.locatemax()
             self.chainset1.clist.append(deque([row,col]))
-            self.__cm.drop(row,col)
+            self.__covariancematrix.drop(row,col)
             current_avail_ends.remove(row)
             current_avail_ends.remove(col)
             chain_index+=1
@@ -160,27 +160,27 @@ class CorrelatedSeries:
     def makechain(self):
         while len(self.chainset1.clist)>1:
             # Reset the covariance matrix to original
-            self.__cm.reinit()
+            self.__covariancematrix.reinit()
             # Remove the covariance between elements of a chain
             for c in self.chainset1.clist:
-                self.__cm.dropchainselfcovariance(c)
+                self.__covariancematrix.dropchainselfcovariance(c)
             chainset2=ChainSet([[0]])
             current_avail_ends=self.__getends(self.chainset1.clist)
             # Remove the interior nodes
-            self.__cm.trim(current_avail_ends)
+            self.__covariancematrix.trim(current_avail_ends)
             chain_index=0
             while len(self.chainset1.clist)>1:
                 if chain_index==0:
                     # Remove the zero from the list
                     chainset2.clist.pop()
                 # Find a maximum
-                row,col=self.__cm.locatemax()
+                row,col=self.__covariancematrix.locatemax()
                 chain1,position1=self.chainset1.findchain(row)
                 chain2,position2=self.chainset1.findchain(col)
                 # Attach the two ends of the two chains into chainset2
                 freeends=chainset2.joinchains(chain1,chain2,position1,position2)
-                self.__cm.drop(row,col)
-                self.__cm.drop(freeends[0],freeends[1])
+                self.__covariancematrix.drop(row,col)
+                self.__covariancematrix.drop(freeends[0],freeends[1])
                 current_avail_ends.remove(row)
                 current_avail_ends.remove(col)
                 current_avail_ends.remove(freeends[0])
