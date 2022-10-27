@@ -4,6 +4,7 @@
 #include <filesystem>
 #include <assert.h>
 #include <functional>
+#include <sstream>
 
 namespace fs = std::filesystem;
 
@@ -47,6 +48,28 @@ class TimeSeries {
 					x.push_back(v2);
 				}
 			}	
+		}
+
+		void from_binary_file(const std::string& filename) {
+			if (fs::exists(filename)) {
+				std::ifstream infile(filename);
+                auto ss = std::ostringstream();
+				ss << infile.rdbuf();
+				std::string content = ss.str();
+				std::vector<char> v(content.begin(), content.end());
+				assert (sizeof(double) == 8);
+				size_t nchar = 8;
+				size_t nstring = v.size()/nchar;
+				size_t k = 0;
+				union { char b[8]; double d; };
+				for (size_t i = 0; i < nstring; ++i) {
+					for (size_t j = 0; j < nchar; ++j) {
+						b[j] = v[k];
+						++k;
+					}
+					x.push_back(d);
+        		}
+			}
 		}
 
 		friend T covariance(const std::unique_ptr<TimeSeries<T>>& timeseries1, const std::unique_ptr<TimeSeries<T>>& timeseries2) {
