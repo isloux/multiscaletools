@@ -37,7 +37,7 @@ class TimeSeries {
 			}
 		}
 		
-		void from_column_file(const std::string& filename) {
+		void from_two_column_file(const std::string& filename) {
 			if (fs::exists(filename)) {
 				std::ifstream infile(filename);
 				T v1, v2;

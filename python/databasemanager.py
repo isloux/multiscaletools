@@ -12,7 +12,6 @@ class psql_database:
         load_dotenv()
         PSQLUSER = os.getenv("POSTGRESQLUSER")
         PSQLPASSWORD = os.getenv("POSTGRESQLPASSWORD")
-        print(PSQLUSER, PSQLPASSWORD)
         try:
             self._conn = psycopg2.connect("dbname=timeseries user=" + PSQLUSER + " password=" + PSQLPASSWORD)
             cur = self._conn.cursor();
