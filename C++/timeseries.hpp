@@ -5,6 +5,7 @@
 #include <assert.h>
 #include <functional>
 #include <sstream>
+#include "database.hpp"
 
 namespace fs = std::filesystem;
 using std::vector;
@@ -84,26 +85,34 @@ class TimeSeries {
 			return sum/static_cast<T>(timeseries1->x.size());
 		}
 
-		friend CovarianceMatrix;
+		friend class CovarianceMatrix;
 };
 
-template<typename T>
+/* template<typename T>
 class CovarianceMatrix {
     private:
         const size_t nseries;
+		T rien;
 
     public:
+	    vector<T> cov;
 
-        CovarianceMatrix(size_t _nseries) : nseries(_nseries) {
+        CovarianceMatrix(const vector<timeseries_entry>& _timeseries, const size_t& _nsteps) : nseries(_timeseries.size()) {
 			using series_id = size_t;
-            vector<T> cov;
+			vector<TimeSeries<T>> series_vector;
+			unique_ptr<TimeSeries<T>> s = make_unique<TimeSeries<T>>(_nsteps);
+			for (series_id i = 0; i < nseries; ++i) {
+				s->from_binary_file(_timeseries[i].filename);			
+				series_vector.push_back(s);
+			}
 			for (series_id i = 0; i < nseries; ++i)
 				for (series_id j = i; j< nseries; ++j)
-					cov.push_back
+					cov.push_back(covariance(series_vector[i], series_vector[j]));
+			assert(cov.size() == nseries*(nseries)/2);
         }
 
         ~CovarianceMatrix() {
             cov.clear();
         }
         
-};
+}; */
