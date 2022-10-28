@@ -7,6 +7,7 @@
 #include <sstream>
 
 namespace fs = std::filesystem;
+using std::vector;
 
 template<typename T>
 class TimeSeries {
@@ -15,9 +16,9 @@ class TimeSeries {
 		T average;
 
 	public:
-		std::vector<T> t, x;
+		vector<T> t, x;
 		
-		TimeSeries(const std::vector<T>& _t, const std::vector<T>& _x) : t(_t), x(_x), npoints(_t.size()) {}
+		TimeSeries(const vector<T>& _t, const vector<T>& _x) : t(_t), x(_x), npoints(_t.size()) {}
 		TimeSeries(const size_t& _n) : npoints(_n) {
 			/* t.reserve(_n);
 			x.reserve(_n); */
@@ -56,7 +57,7 @@ class TimeSeries {
                 auto ss = std::ostringstream();
 				ss << infile.rdbuf();
 				std::string content = ss.str();
-				std::vector<char> v(content.begin(), content.end());
+				vector<char> v(content.begin(), content.end());
 				assert (sizeof(double) == 8);
 				size_t nchar = 8;
 				size_t nstring = v.size()/nchar;
@@ -82,4 +83,27 @@ class TimeSeries {
 			T sum = std::accumulate(tst1.x.begin(), tst1.x.end(), static_cast<T>(0));
 			return sum/static_cast<T>(timeseries1->x.size());
 		}
+
+		friend CovarianceMatrix;
+};
+
+template<typename T>
+class CovarianceMatrix {
+    private:
+        const size_t nseries;
+
+    public:
+
+        CovarianceMatrix(size_t _nseries) : nseries(_nseries) {
+			using series_id = size_t;
+            vector<T> cov;
+			for (series_id i = 0; i < nseries; ++i)
+				for (series_id j = i; j< nseries; ++j)
+					cov.push_back
+        }
+
+        ~CovarianceMatrix() {
+            cov.clear();
+        }
+        
 };
