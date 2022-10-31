@@ -55,7 +55,7 @@ class TimeSeries {
 		void from_binary_file(const std::string& filename) {
 			if (fs::exists(filename)) {
 				std::ifstream infile(filename);
-                auto ss = std::ostringstream();
+       			        auto ss = std::ostringstream();
 				ss << infile.rdbuf();
 				std::string content = ss.str();
 				vector<char> v(content.begin(), content.end());
@@ -88,22 +88,23 @@ class TimeSeries {
 		friend class CovarianceMatrix;
 };
 
-/* template<typename T>
 class CovarianceMatrix {
     private:
         const size_t nseries;
-		T rien;
 
     public:
-	    vector<T> cov;
+	vector<double> cov;
 
         CovarianceMatrix(const vector<timeseries_entry>& _timeseries, const size_t& _nsteps) : nseries(_timeseries.size()) {
 			using series_id = size_t;
-			vector<TimeSeries<T>> series_vector;
-			unique_ptr<TimeSeries<T>> s = make_unique<TimeSeries<T>>(_nsteps);
-			for (series_id i = 0; i < nseries; ++i) {
-				s->from_binary_file(_timeseries[i].filename);			
-				series_vector.push_back(s);
+			vector<std::unique_ptr<TimeSeries<double>>> series_vector(nseries);
+			{
+				series_id i = 0;
+				for (auto& series_id_ptr : series_vector) {
+					series_id_ptr = std::make_unique<TimeSeries<double>>(_nsteps);
+					series_id_ptr->from_binary_file(_timeseries[i].filename);			
+					++i;
+				}
 			}
 			for (series_id i = 0; i < nseries; ++i)
 				for (series_id j = i; j< nseries; ++j)
@@ -112,7 +113,7 @@ class CovarianceMatrix {
         }
 
         ~CovarianceMatrix() {
-            cov.clear();
+        	cov.clear();
         }
         
-}; */
+};
