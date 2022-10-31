@@ -78,30 +78,31 @@ class TimeSeries {
 			assert(timeseries1->x.size() == timeseries2->x.size());
 			TimeSeries<T> tst1 = *timeseries1;
 			TimeSeries<T> tst2 = *timeseries2;
-			std::transform(timeseries1->x.begin(), timeseries1->x.end(), tst1.x.begin(), [&](T _x){ return _x-timeseries1->average; });
-			std::transform(timeseries2->x.begin(), timeseries2->x.end(), tst2.x.begin(), [&](T _x){ return _x-timeseries2->average; });
+			std::transform(timeseries1->x.begin(), timeseries1->x.end(), tst1.x.begin(), [&](const T _x){ return _x-timeseries1->average; });
+			std::transform(timeseries2->x.begin(), timeseries2->x.end(), tst2.x.begin(), [&](const T _x){ return _x-timeseries2->average; });
 			std::transform(tst1.x.begin(), tst1.x.end(), tst2.x.begin(), tst1.x.begin(), std::multiplies<T>());		
 			T sum = std::accumulate(tst1.x.begin(), tst1.x.end(), static_cast<T>(0));
 			return sum/static_cast<T>(timeseries1->x.size());
 		}
 
-		friend class CovarianceMatrix;
+		template<typename> friend class CovarianceMatrix;
 };
 
+template<typename T>
 class CovarianceMatrix {
     private:
         const size_t nseries;
 
     public:
-	vector<double> cov;
+	vector<T> cov;
 
         CovarianceMatrix(const vector<timeseries_entry>& _timeseries, const size_t& _nsteps) : nseries(_timeseries.size()) {
 			using series_id = size_t;
-			vector<std::unique_ptr<TimeSeries<double>>> series_vector(nseries);
+			vector<std::unique_ptr<TimeSeries<T>>> series_vector(nseries);
 			{
 				series_id i = 0;
 				for (auto& series_id_ptr : series_vector) {
-					series_id_ptr = std::make_unique<TimeSeries<double>>(_nsteps);
+					series_id_ptr = std::make_unique<TimeSeries<T>>(_nsteps);
 					series_id_ptr->from_binary_file(_timeseries[i].filename);			
 					++i;
 				}
@@ -109,7 +110,7 @@ class CovarianceMatrix {
 			for (series_id i = 0; i < nseries; ++i)
 				for (series_id j = i; j< nseries; ++j)
 					cov.push_back(covariance(series_vector[i], series_vector[j]));
-			assert(cov.size() == nseries*(nseries)/2);
+			assert(cov.size() == nseries*(nseries+1)/2);
         }
 
         ~CovarianceMatrix() {
