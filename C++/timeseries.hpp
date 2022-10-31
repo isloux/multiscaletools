@@ -10,6 +10,12 @@
 namespace fs = std::filesystem;
 using std::vector;
 
+size_t linecounter(const std::string& filename) {
+	std::ifstream infile(filename);
+    	infile.unsetf(std::ios_base::skipws);
+    	return std::count(std::istream_iterator<char>(infile), std::istream_iterator<char>(), '\n');
+}
+
 template<typename T>
 class TimeSeries {
 	private:
